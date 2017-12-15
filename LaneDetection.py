@@ -12,10 +12,20 @@ import traceback
 import sys
 import skvideo.io
 
+if sys.version_info > (3, 4):
+    import importlib
+
+if (sys.version_info > (3, 0) and sys.version_info < (3, 4)):
+    import imp
 # Configuration Settings
 import configuration
 
 # Custom Helper functions
+
+# Camera Calibration
+#from calibrateCamera import calibrateCamera
+
+# Image Preprocessing
 from LaneDetectionUtils import clipImages,  normalizeImages,  changeColorSpace,  isolatePixelsPerChannel,  histogramBasedLaneMarking
 from LaneDetectionUtils import customContrast,  customIsolatePixel, doEdgeDetection,  dir_threshold,  getCalibrationCoefficients,  unwarp,  warp
 from LaneDetectionUtils import doHOG
@@ -25,6 +35,14 @@ from LaneDetectionUtils import doHOG
                 
             
 # Worker Functions
+
+'''
+def doCalibrateCamera():
+    (objpoints, imgpoints, camera_matrix, dist_coefs) = calibrateCamera()
+    print("Done calibrate camera")
+'''
+    
+    
 def doLaneDetection():
 
     #Read the contents of the input test_image directory
@@ -35,7 +53,11 @@ def doLaneDetection():
     plt.ioff()
     #plt.ion()
     
-    #one time-setting a sample image
+    # one time-setting a sample image
+    # Also reconfigure this section if you need smaller number of plots.
+    # At the moment, each of three channels after post-processing are displayed
+    # individually, alongwith the original image, and a image overlaid with markers.
+    
     fullPathtoCurrentImage = os.path.join(configuration.locationImageFiles, imageFiles[0])
     filename, file_extension = os.path.splitext(fullPathtoCurrentImage)
             
@@ -68,7 +90,7 @@ def doLaneDetection():
     axes[1, 1].set_title('Original', fontsize=10)
 
     
-
+    # The design enables tuning of  
     while(True):
         
         #For each image...
@@ -76,6 +98,14 @@ def doLaneDetection():
         imageNames = []
 
         for imageIndex in range(len(imageFiles)):
+            
+            if sys.version_info > (3, 4):
+                importlib.reload(configuration) 
+
+            if (sys.version_info > (3, 0) and sys.version_info < (3, 4)):
+                imp.reload(configuration) 
+                
+            importlib.reload(configuration) 
         
             #Get full path to each image that we would like to read
             fullPathtoCurrentImage = os.path.join(configuration.locationImageFiles, imageFiles[imageIndex])
@@ -141,6 +171,16 @@ markers for each image passed to it.
 '''            
 def processImages(currentImageForProcessing, imageName):            
 
+    '''
+    Preprocessing steps are optionally applied, and depend upon
+    the configuration set in the configuration file.
+    
+    You may enable or disable steps by modifying the configuration file.
+    '''
+
+    
+
+
     #See if images need to be clipped
     if(configuration.Clip):
         originalImage, finalImage = clipImages(np.copy(currentImageForProcessing))
@@ -148,7 +188,7 @@ def processImages(currentImageForProcessing, imageName):
     else:
         finalImage = currentImageForProcessing
     
-    
+
     #Change to a new color space
     finalImage = changeColorSpace(configuration.colorSpace,  finalImage)
     
@@ -163,23 +203,27 @@ def processImages(currentImageForProcessing, imageName):
     else:
         finalImage = finalImage
     
-    
+    # Canny Edge Detection, if configured.
     if(configuration.doCanny):
         finalImage = doEdgeDetection(finalImage,  int(configuration.CannyLowerThreshold) ,  int(configuration.CannyUpperThreshold) ,  int(configuration.BlurKernelSize) ,  int(configuration.houghThreshold) ,  int(configuration.MinLineLength) ,  int(configuration.MaxLineGap))
         
     
+    # Directional Gradient, if configured.
     if(configuration.directionalGradient):
             finalImage = dir_threshold(finalImage, sobel_kernel= int(configuration.DirectionalGradientKernelSize), thresh=(configuration.DirectionalGradientLowerThreshold, configuration.DirectionalGradientUpperThreshold))
-            
+    
+
+    
+    
     
     #Unwarp the image -- use the calibration results computed earlier
     if(not configuration.camera_matrix):
         camera_matrix,  dist_coefs = getCalibrationCoefficients(configuration.RelativePathtoCameraMatrix)
     
-
+    # Do the unwarp now.
     finalImage = unwarp(finalImage, camera_matrix,  dist_coefs)
     
-    
+    # Use spatial color binning to detect lanes
     if(configuration.doHistogramBasedLaneMarking):
         try:
             finalImage, leftHalfCentersofGravity, rightHalfCentersofGravity = histogramBasedLaneMarking(finalImage)
@@ -201,7 +245,7 @@ def processImages(currentImageForProcessing, imageName):
         finalImage = doHOG(np.copy(finalImage), int(configuration.nHOGOrientations), (int(configuration.nHOGPixelsPerCellX) , int(configuration.nHOGPixelsPerCellY)), (int(configuration.nHOGCellsPerBlockX) , int(configuration.nHOGCellsPerBlockY)), True)
         
     
-    #Warp again
+    #Warp again -- so that the image matches the aspect from the camera
     finalImage = warp(finalImage, camera_matrix,  dist_coefs)
     
     
@@ -213,19 +257,10 @@ def processImages(currentImageForProcessing, imageName):
     #Warp the original image for comparison
     overlayImage = cv2.addWeighted(finalImage,1, originalImage, 1, 0)
     combinedImages.append(overlayImage)
-    
-    
-    #unwarpedOriginal = unwarp(originalImage, camera_matrix,  dist_coefs)
-    #combinedImages.append(unwarpedOriginal)
-    
-    
-    
+
     combinedImages.append(originalImage)  
     
     
-    #return finalImage
-    #print("Done. Shapes (Unwarped Original: %d, %d, %d" %(unwarpedOriginal.shape),  end='')
-    #print(". finalImage: %d, %d, %d" %(finalImage.shape))
     return combinedImages,  imageName
         
             
@@ -320,75 +355,20 @@ def doLaneDetection_Video():
             writer.close()
 
 
+
+    
+
+# There seems to be a bug in the multiprocessing library
+# The workers hang if the doCalibrateCamera() is enabled here.
+# At the moment, the pipeline should be run via the shell script
+# provide separately.
+
+# calibrate the camera used to remove any distortion
+#doCalibrateCamera()
+
+
 # Call the function below to mark invidiual images
 doLaneDetection()
 
 # Call the function below to mark videos
 #doLaneDetection_Video()
-
-
-
-
-
-##-------------------------- TESTING---------------------------------
-#
-#
-##Read the contents of the input test_image directory
-#imageFiles = os.listdir(configuration.locationImageFiles)
-#
-##For each image...
-#for image in imageFiles:
-#    
-#    #Get full path to each image that we would like to read
-#    fullPathtoCurrentImage = os.path.join(configuration.locationImageFiles, image)
-#    
-#    #print the full path
-#    #print(fullPathtoCurrentImage)
-#    
-#    #Get the file extension
-#    filename, file_extension = os.path.splitext(fullPathtoCurrentImage)
-#    
-#    #Read the image
-#    currentImageForProcessing = mpimg.imread(fullPathtoCurrentImage)
-#    
-#    if(file_extension == ".png"):
-#        currentImageForProcessing = (currentImageForProcessing*255).astype(np.uint8)
-#    
-#    
-#    #See if images need to be clipped
-#    finalImage = clipImages(np.copy(currentImageForProcessing))
-#    finalImage = changeColorSpace(configuration.colorSpace,  finalImage)
-#    finalImage = customContrast(finalImage)
-#    finalImage = doEdgeDetection(finalImage,  int(configuration.CannyLowerThreshold) ,  int(configuration.CannyUpperThreshold) ,  int(configuration.BlurKernelSize) ,  int(configuration.houghThreshold) ,  int(configuration.MinLineLength) ,  int(configuration.MaxLineGap))    
-#    finalImage = dir_threshold(finalImage, sobel_kernel= int(configuration.DirectionalGradientKernelSize), thresh=(configuration.DirectionalGradientLowerThreshold, configuration.DirectionalGradientUpperThreshold))
-#    camera_matrix,  dist_coefs = getCalibrationCoefficients(configuration.RelativePathtoCameraMatrix)
-#    finalImage = unwarp(finalImage, camera_matrix,  dist_coefs)
-#    finalImage = doHOG(finalImage, int(configuration.nHOGOrientations), (int(configuration.nHOGPixelsPerCellX) , int(configuration.nHOGPixelsPerCellY)), (int(configuration.nHOGCellsPerBlockX) , int(configuration.nHOGCellsPerBlockY)), True)
-#    
-#    
-#    #plt.ioff()
-#    f, axes = plt.subplots(4, 1, figsize=(4.5*7.2,12.8))
-#    f.tight_layout()
-#    
-#    #Channel 0
-#    axes[0].imshow(finalImage[:, :, 0],cmap='gray')
-#    axes[0].set_title('Channel 0', fontsize=20)
-#    
-#    #Channel 1
-#    axes[1].imshow(finalImage[:, :, 1],  cmap='gray')
-#    axes[1].set_title('Channel 1', fontsize=20)
-#    
-#    #Channel 2
-#    axes[2].imshow(finalImage[:, :, 2],  cmap='gray')
-#    axes[2].set_title('Channel 2', fontsize=20)
-#    
-#    #Combined
-#    axes[3].imshow(finalImage)
-#    axes[3].set_title('Combined', fontsize=20)
-#    
-#    #plt.imshow(finalImage)
-#    plt.pause(1)
-#    plt.close()
-#    break
-#    
-#    

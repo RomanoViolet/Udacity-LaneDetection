@@ -3,13 +3,26 @@ from multiprocessing import Queue
 
 #Location of the input test images
 locationImageFiles = "./testImages"
-locationOfInputVideos = "../InputVideos"
-locationOfOutputVideos = "../OutputVideos"
+locationOfInputVideos = "./InputVideos"
+locationOfOutputVideos = "./OutputVideos"
 
-#Location for storing output processed images
+# For Camera Calibration
+DEBUG = False
+CHESSBOARD_COLUMNS = 9
+CHESSBOARD_ROWS = 6
+RELATIVE_PATH_TO_CALIBRATION_IMAGES="./Camera_Calibration_InputImages/"
+RELATIVE_PATH_TO_OUTPUT_CALIBRATION_FOLDER="./Camera_Calibration_OutputImages/"
+NOMINAL_HEIGHT_OF_CALIBRATION_IMAGES=720
+NOMINAL_WIDTH_OF_CALIBRATION_IMAGES=1280
+
+
+
+
+#Location for storing output processed images from the lane detection routines
 locationProcessedImages = "./Results"
 imageOffsetFromTop = int(0.45*720)
-#Performance Variables
+
+#Performance Variables for image processing
 normalize = False
 Clip = True
 Blur = False
@@ -43,7 +56,7 @@ directionalGradient = True
 DirectionalGradientKernelSize = 7
 DirectionalGradientLowerThreshold = 0.785398
 DirectionalGradientUpperThreshold = 1.57
-RelativePathtoCameraMatrix = "./Calibrations"
+RelativePathtoCameraMatrix = "./Camera_Calibration_OutputImages/"
 doHOG = False
 #HOG Defaults
 nHOGOrientations = 2 

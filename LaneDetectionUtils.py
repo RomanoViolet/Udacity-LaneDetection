@@ -23,14 +23,10 @@ def getCalibrationCoefficients(RelativePathtoCameraMatrix):
 
 
 def customContrast(img):
-    #r = currentImage[:, :, 3]
-    #g = currentImage[:, :, 2]
-    #b = currentImage[:, :, 1]
     
-    #Muliply each pixel by 0.0041857.pixel^2  -0.0646125*pixel + 0.3078798
-    #coeff = [0.0041857, -0.0646125,  0.3078798]
-    #contrastedImage = coeff[0]*img*img + coeff[1]*img + coeff[2]
-    
+    # This picks out yellow and white colors from lane markings
+    # Yellow color is determine based on the color-combination of red, green and blue channels.
+
     Yellow = np.zeros_like(img)
     red_Channel = img[:, :, 0]
     green_Channel = img[:, :, 1]
@@ -50,6 +46,8 @@ def customContrast(img):
     
     
 def region_of_interest(img, vertices):
+    # Useful for blacking out uninteresting regions of image
+    
     #defining a blank mask to start with
     mask = np.zeros_like(img)   
     
@@ -71,7 +69,10 @@ def region_of_interest(img, vertices):
 
 
 def clipImages(img):
-
+    
+    # Physically change the dimensions of image, based on the 
+    # region of interest.
+    
     heightOfImage = img.shape[0]
     widthOfImage = img.shape[1]
     
@@ -131,6 +132,8 @@ def clipImages(img):
 
 
 def normalizeImages(img,  channels,  globalNormalization):
+    # Change individual channel strengths withut distorting the information in the image
+    
     normalizedImage  = np.copy(img)
     for channel in channels:
         #Local normalization
@@ -153,6 +156,8 @@ def normalizeImages(img,  channels,  globalNormalization):
     
     
 def changeColorSpace(targetColorSpace,  img):
+    
+    # Move to new 
     
     if targetColorSpace != 'RGB':
         if targetColorSpace == 'YUV':
