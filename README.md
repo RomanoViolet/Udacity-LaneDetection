@@ -6,8 +6,7 @@ This project implements Lane Detection and Advanced Lane Detection projects as r
 Lane Detection is done using the [Python](https://www.python.org/) implementation of the [Open Source Computer Vision Library (OpenCV)](https://opencv.org/).
 
 ### How it Looks
-A sample frame from one of the videos overlaid with markers is shown below:
-![Image](src)
+A sample frame from one of the videos overlaid with markers is ![shown](https://github.com/RomanoViolet/Udacity-LaneDetection/blob/master/Results/vlcsnap-2017-12-16-00h00m30s932.png)
 
 ### Structure of the Project
 The implementation is split into four files:
@@ -40,38 +39,9 @@ Multiprocessing library has been used to speed up image and video processing. Ho
 - The current pipeline works well for "project_video", and is acceptable for "challenge_video", but is poor for "harder_challenge_video". Suggestions welcome.
 - The logic can be reorganized for readability.
 
-You can use the [editor on GitHub](https://github.com/RomanoViolet/Udacity-LaneDetection/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+### Credits
+- Udacity: Lecturers, and mentors;
+- Internet: for examples and samples.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/RomanoViolet/Udacity-LaneDetection/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+### Disclaimer
+Some of the ideas are borrowed and adapted from other people's work.
