@@ -31,7 +31,7 @@ Multiprocessing library has been used to speed up image and video processing. Ho
 ### Exploring Options
 - It is possible to configure the sequence of steps executed for detecting lanes by setting or modifying options from _configuration.py_. Normally, no other changes are required. The changes can be made at runtime -- simply modify your choice of option, and save the _configuration.py_. The effect of all changes are visible after the current pool of threads returns.
 
-- In order to evaluate the effect of the choice made, the LaneDetection continuously cycles through the images in the testImages folder, in case `doLaneDetection()` option is uncommented out.
+- In order to evaluate the effect of the choice made, the LaneDetection continuously cycles through the images in the testImages folder, in case `doLaneDetection()` option is uncommented in.
 
 - Set the number of threads allowed by tweaking the option `nProcesses` from the _configuration.py_ file.
 
